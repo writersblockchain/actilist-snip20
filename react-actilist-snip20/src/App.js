@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { cloneElement, useState } from "react";
 import {
   SecretNetworkClient,
   EncryptionUtilsImpl,
@@ -9,13 +9,15 @@ import {
 
 function App() {
   const [myAddress, setMyAddress] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [secretJs, setSecretJs] = useState(null);
-  const sScrtContractAddress = "secret1umwqjum7f4zmp9alr2kpmq4y5j4hyxlam896r3";
+  const sScrtContractAddress = "secret18vd8fpwxzck93qlwghaj6arh4p7c5n8978vsyg";
   const testAddress = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
   async function connectWallet() {
     const chainId = "pulsar-2";
     const LCD_URL = "https://api.pulsar.scrttestnet.com";
+    // const apiKey1 = "api_key_E5u6/bAGLhYeqZzDSBHr3qyRqkq43VPvloConQZXxE8=";
 
     await window.keplr.enable(chainId);
     const keplrOfflineSigner = window.keplr.getOfflineSignerOnlyAmino(chainId);
@@ -44,52 +46,75 @@ function App() {
     console.log(`I have ${Number(amount) / 1e6} SCRT!`);
   };
 
-  let transferTokens = async () => {};
+  let createViewingKey = async () => {
+    const entropy = "Another really random thing";
 
-  // let transferTokens = async () => {
-  //   // Entropy: Secure implementation is left to the client, but it is recommended to use base-64 encoded random bytes and not predictable inputs.
-  //   const entropy = "Another really random thing";
+    let handleMsg = { create_viewing_key: { entropy: entropy } };
+    console.log("Creating viewing key");
+    let tx = await secretJs.tx.compute.executeContract(
+      {
+        sender: testAddress,
+        contract_address: sScrtContractAddress,
+        msg: handleMsg,
+        sent_funds: [], // optional
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+    const apiKey = JSON.parse(
+      fromUtf8(MsgExecuteContractResponse.decode(tx.data[0]).data)
+    ).create_viewing_key.key;
 
-  //   let handleMsg = { create_viewing_key: { entropy: entropy } };
-  //   console.log("Creating viewing key");
-  //   let tx = await secretJs.tx.compute.executeContract(
-  //     {
-  //       sender: myAddress,
-  //       contract_address: sScrtContractAddress,
-  //       msg: handleMsg,
-  //       sent_funds: ["1000"], // optional
-  //     },
-  //     {
-  //       gasLimit: 100_000,
-  //     }
-  //   );
+    setApiKey(apiKey);
+    console.log(apiKey);
+  };
 
-  //   // Convert the UTF8 bytes to String, before parsing the JSON for the api key.
-  //   const apiKey = JSON.parse(
-  //     fromUtf8(MsgExecuteContractResponse.decode(tx.data[0]).data)
-  //   ).create_viewing_key.key;
+  let transferTokens = async () => {
+    let handleMsg = {
+      transfer: {
+        owner: myAddress,
+        amount: "100000000",
+        recipient: testAddress,
+      },
+    };
+    console.log("Transferring tokens");
 
-  //   // Query balance with the api key
-  //   const balanceQuery = {
-  //     balance: {
-  //       key: apiKey,
-  //       address: myAddress,
-  //     },
-  //   };
+    let tx = await secretJs.tx.compute.executeContract(
+      {
+        sender: myAddress,
+        contract_address: sScrtContractAddress,
+        msg: handleMsg,
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+  };
 
-  //   let balance = await secretJs.query.compute.queryContract({
-  //     contract_address: sScrtContractAddress,
-  //     query: balanceQuery,
-  //   });
+  let query_sScrt_Token_Balance = async () => {
+    const balanceQuery = {
+      balance: {
+        key: apiKey,
+        address: myAddress,
+      },
+    };
 
-  //   console.log("My token balance: ", balance);
-  // };
+    let balance = await secretJs.query.compute.queryContract({
+      contract_address: sScrtContractAddress,
+      query: balanceQuery,
+    });
+
+    console.log("My token balance: ", balance);
+  };
 
   return (
     <div>
       <button onClick={connectWallet}>Connect Wallet</button>
       <button onClick={getBalance}>Get Balance</button>
+      <button onClick={createViewingKey}>Create Viewing Key</button>
       <button onClick={transferTokens}>Transfer Tokens</button>
+      <button onClick={query_sScrt_Token_Balance}>Query Balance</button>
     </div>
   );
 }
