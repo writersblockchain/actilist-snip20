@@ -1,5 +1,6 @@
-import "./App.css";
-import { cloneElement, useState } from "react";
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import { useState } from "react";
 import {
   SecretNetworkClient,
   EncryptionUtilsImpl,
@@ -7,7 +8,7 @@ import {
   MsgExecuteContractResponse,
 } from "secretjs";
 
-function App() {
+export default function Home() {
   const [myAddress, setMyAddress] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [secretJs, setSecretJs] = useState(null);
@@ -57,7 +58,7 @@ function App() {
         sender: myAddress,
         contract_address: sScrtContractAddress,
         msg: handleMsg,
-        sent_funds: ["1000"],
+        sent_funds: [{ denom: "uscrt", amount: "1" }],
       },
       {
         gasLimit: 100_000,
@@ -134,8 +135,7 @@ function App() {
       <button onClick={createViewingKey}>Create Viewing Key</button>
       <button onClick={depositScrt}>Deposit Secret</button>
       <button onClick={query_sScrt_Token_Balance}>Query Balance</button>
+      <h1 className="text-3xl font-bold underline">Hello world!</h1>
     </div>
   );
 }
-
-export default App;
