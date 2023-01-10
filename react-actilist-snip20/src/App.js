@@ -46,6 +46,25 @@ function App() {
     console.log(`I have ${Number(amount) / 1e6} SCRT!`);
   };
 
+  let depositScrt = async () => {
+    let handleMsg = {
+      deposit: {},
+    };
+    console.log("Depositing tokens");
+
+    let tx = await secretJs.tx.compute.executeContract(
+      {
+        sender: myAddress,
+        contract_address: sScrtContractAddress,
+        msg: handleMsg,
+        sent_funds: ["1000"],
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+  };
+
   let createViewingKey = async () => {
     const entropy = "Another really random thing";
 
@@ -53,7 +72,7 @@ function App() {
     console.log("Creating viewing key");
     let tx = await secretJs.tx.compute.executeContract(
       {
-        sender: testAddress,
+        sender: myAddress,
         contract_address: sScrtContractAddress,
         msg: handleMsg,
         sent_funds: [], // optional
@@ -70,27 +89,27 @@ function App() {
     console.log(apiKey);
   };
 
-  let transferTokens = async () => {
-    let handleMsg = {
-      transfer: {
-        owner: myAddress,
-        amount: "100000000",
-        recipient: testAddress,
-      },
-    };
-    console.log("Transferring tokens");
+  // let transferTokens = async () => {
+  //   let handleMsg = {
+  //     transfer: {
+  //       owner: myAddress,
+  //       amount: "100000000",
+  //       recipient: testAddress,
+  //     },
+  //   };
+  //   console.log("Transferring tokens");
 
-    let tx = await secretJs.tx.compute.executeContract(
-      {
-        sender: myAddress,
-        contract_address: sScrtContractAddress,
-        msg: handleMsg,
-      },
-      {
-        gasLimit: 100_000,
-      }
-    );
-  };
+  //   let tx = await secretJs.tx.compute.executeContract(
+  //     {
+  //       sender: myAddress,
+  //       contract_address: sScrtContractAddress,
+  //       msg: handleMsg,
+  //     },
+  //     {
+  //       gasLimit: 100_000,
+  //     }
+  //   );
+  // };
 
   let query_sScrt_Token_Balance = async () => {
     const balanceQuery = {
@@ -113,7 +132,7 @@ function App() {
       <button onClick={connectWallet}>Connect Wallet</button>
       <button onClick={getBalance}>Get Balance</button>
       <button onClick={createViewingKey}>Create Viewing Key</button>
-      <button onClick={transferTokens}>Transfer Tokens</button>
+      <button onClick={depositScrt}>Deposit Secret</button>
       <button onClick={query_sScrt_Token_Balance}>Query Balance</button>
     </div>
   );
