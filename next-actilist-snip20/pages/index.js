@@ -1,5 +1,5 @@
 import Head from "next/head";
-import Swap from "./components/Swap";
+import Form from "./components/Form";
 import styles from "../styles/Home.module.css";
 import { useState } from "react";
 import {
@@ -131,7 +131,7 @@ export default function Home() {
 
   return (
     <div>
-      <Swap />
+      <Form />
       {/* <button onClick={connectWallet}>Connect Wallet</button>
       <button onClick={getBalance}>Get Balance</button>
       <button onClick={createViewingKey}>Create Viewing Key</button>
