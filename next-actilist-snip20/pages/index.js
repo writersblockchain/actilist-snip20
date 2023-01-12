@@ -16,38 +16,6 @@ export default function Home() {
   const sScrtContractAddress = "secret18vd8fpwxzck93qlwghaj6arh4p7c5n8978vsyg";
   const testAddress = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
-  async function connectWallet() {
-    const chainId = "pulsar-2";
-    const LCD_URL = "https://api.pulsar.scrttestnet.com";
-    // const apiKey1 = "api_key_E5u6/bAGLhYeqZzDSBHr3qyRqkq43VPvloConQZXxE8=";
-
-    await window.keplr.enable(chainId);
-    const keplrOfflineSigner = window.keplr.getOfflineSignerOnlyAmino(chainId);
-    const [{ address }] = await keplrOfflineSigner.getAccounts();
-
-    setSecretJs(
-      await new SecretNetworkClient({
-        url: LCD_URL,
-        chainId: chainId,
-        wallet: keplrOfflineSigner,
-        walletAddress: address,
-      })
-    );
-    setMyAddress(address);
-    console.log("my wallet address: ", address);
-  }
-
-  let getBalance = async () => {
-    const {
-      balance: { amount },
-    } = await secretJs.query.bank.balance({
-      address: myAddress,
-      denom: "uscrt",
-    });
-
-    console.log(`I have ${Number(amount) / 1e6} SCRT!`);
-  };
-
   let depositScrt = async () => {
     let handleMsg = {
       deposit: {},
