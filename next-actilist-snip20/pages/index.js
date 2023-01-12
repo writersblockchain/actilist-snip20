@@ -5,9 +5,10 @@ export default function Home() {
   const [myAddress, setMyAddress] = useState("No wallet currently connected.");
   const [scrtBalance, setScrtBalance] = useState("SCRT Balance: ");
   const [scrtScrtBalance, setScrtScrtBalance] = useState("sSCRT Balance: ");
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(null);
   const [secretJs, setSecretJs] = useState(null);
-  const [tokenAmount, setTokenAmount] = useState("");
+  const [secretTokenAmount, setSecretTokenAmount] = useState("");
+  const [secretSecretTokenAmount, setSecretSecretTokenAmount] = useState("");
 
   return (
     <div>
@@ -22,8 +23,10 @@ export default function Home() {
         setScrtScrtBalance={setScrtScrtBalance}
         apiKey={apiKey}
         setApiKey={setApiKey}
-        tokenAmount={tokenAmount}
-        setTokenAmount={setTokenAmount}
+        secretTokenAmount={secretTokenAmount}
+        setSecretTokenAmount={setSecretTokenAmount}
+        secretSecretTokenAmount={secretSecretTokenAmount}
+        setSecretSecretTokenAmount={setSecretSecretTokenAmount}
       />
     </div>
   );

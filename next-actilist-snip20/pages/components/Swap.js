@@ -4,7 +4,7 @@ import {
   fromUtf8,
   MsgExecuteContractResponse,
 } from "secretjs";
-import { useState } from "react";
+import { cloneElement, useState } from "react";
 
 export default function Form({
   setSecretJs,
@@ -17,8 +17,10 @@ export default function Form({
   scrtScrtBalance,
   apiKey,
   setApiKey,
-  tokenAmount,
-  setTokenAmount,
+  secretTokenAmount,
+  setSecretTokenAmount,
+  secretSecretTokenAmount,
+  setSecretSecretTokenAmount,
 }) {
   const sScrtContractAddress = "secret18vd8fpwxzck93qlwghaj6arh4p7c5n8978vsyg";
   const testAddress = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
@@ -44,9 +46,13 @@ export default function Form({
     console.log("my wallet address: ", address);
   }
 
-  let handleChange = (e) => {
-    setTokenAmount(e.target.value);
-    console.log(e.target.elements);
+  const convertScrt = (event) => {
+    // console.log(event.target.value);
+    setSecretTokenAmount(event.target.value);
+  };
+  const convertsScrt = (event) => {
+    console.log(event.target.value);
+    setSecretSecretTokenAmount(event.target.value);
   };
 
   let getBalance = async () => {
@@ -70,7 +76,7 @@ export default function Form({
         sender: myAddress,
         contract_address: sScrtContractAddress,
         msg: handleMsg,
-        sent_funds: [{ denom: "uscrt", amount: "1" }],
+        sent_funds: [{ denom: "uscrt", amount: secretTokenAmount }],
       },
       {
         gasLimit: 100_000,
@@ -80,7 +86,7 @@ export default function Form({
 
   let redeem = async () => {
     let handleMsg = {
-      redeem: { amount: { tokenAmount } },
+      redeem: { amount: secretSecretTokenAmount },
     };
     console.log("Redeeming tokens");
 
@@ -135,29 +141,29 @@ export default function Form({
     console.log("My token balance: ", JSON.stringify(balance));
   };
 
-  let createViewingKey = async () => {
-    const entropy = "Another really random thing";
+  // let createViewingKey = async () => {
+  //   const entropy = "Another really random thing";
 
-    let handleMsg = { create_viewing_key: { entropy: entropy } };
-    console.log("Creating viewing key");
-    let tx = await secretJs.tx.compute.executeContract(
-      {
-        sender: myAddress,
-        contract_address: sScrtContractAddress,
-        msg: handleMsg,
-        sent_funds: [], // optional
-      },
-      {
-        gasLimit: 100_000,
-      }
-    );
-    const apiKey = JSON.parse(
-      fromUtf8(MsgExecuteContractResponse.decode(tx.data[0]).data)
-    ).create_viewing_key.key;
+  //   let handleMsg = { create_viewing_key: { entropy: entropy } };
+  //   console.log("Creating viewing key");
+  //   let tx = await secretJs.tx.compute.executeContract(
+  //     {
+  //       sender: myAddress,
+  //       contract_address: sScrtContractAddress,
+  //       msg: handleMsg,
+  //       sent_funds: [], // optional
+  //     },
+  //     {
+  //       gasLimit: 100_000,
+  //     }
+  //   );
+  //   const apiKey = JSON.parse(
+  //     fromUtf8(MsgExecuteContractResponse.decode(tx.data[0]).data)
+  //   ).create_viewing_key.key;
 
-    setApiKey(apiKey);
-    console.log(apiKey);
-  };
+  //   setApiKey(apiKey);
+  //   console.log(apiKey);
+  // };
 
   return (
     <>
@@ -233,12 +239,14 @@ export default function Form({
                     </div>
                     <input
                       type="text"
-                      name="convertSCRT"
-                      id="convertSCRT"
+                      name="secretTokenAmount"
+                      id="secretTokenAmount"
+                      value={secretTokenAmount}
+                      onChange={convertScrt}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                     <button
-                      onClick={handleChange}
+                      onClick={depositScrt}
                       className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2"
                     >
                       Convert SCRT
@@ -250,11 +258,16 @@ export default function Form({
                     </div>
                     <input
                       type="text"
-                      name="convertSCRT"
-                      id="convertSCRT"
+                      name="convertsSCRT"
+                      id="convertsSCRT"
+                      value={secretSecretTokenAmount}
+                      onChange={convertsScrt}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
-                    <button className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2">
+                    <button
+                      onClick={redeem}
+                      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2"
+                    >
                       Convert sSCRT
                     </button>
                   </div>
