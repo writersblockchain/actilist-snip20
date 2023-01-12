@@ -40,11 +40,13 @@ export default function Form({
       })
     );
     setMyAddress(address);
+
     console.log("my wallet address: ", address);
   }
 
   let handleChange = (e) => {
     setTokenAmount(e.target.value);
+    console.log(e.target.elements);
   };
 
   let getBalance = async () => {
@@ -94,6 +96,45 @@ export default function Form({
     );
   };
 
+  let query_sScrt_Token_Balance = async () => {
+    const entropy = "Another really random thing";
+
+    let handleMsg = { create_viewing_key: { entropy: entropy } };
+    console.log("Creating viewing key");
+    let tx = await secretJs.tx.compute.executeContract(
+      {
+        sender: myAddress,
+        contract_address: sScrtContractAddress,
+        msg: handleMsg,
+        sent_funds: [], // optional
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+    const apiKey = JSON.parse(
+      fromUtf8(MsgExecuteContractResponse.decode(tx.data[0]).data)
+    ).create_viewing_key.key;
+
+    setApiKey(apiKey);
+    console.log(apiKey);
+
+    const balanceQuery = {
+      balance: {
+        key: apiKey,
+        address: myAddress,
+      },
+    };
+
+    let balance = await secretJs.query.compute.queryContract({
+      contract_address: sScrtContractAddress,
+      query: balanceQuery,
+    });
+
+    setScrtScrtBalance(JSON.stringify(balance));
+    console.log("My token balance: ", JSON.stringify(balance));
+  };
+
   let createViewingKey = async () => {
     const entropy = "Another really random thing";
 
@@ -116,24 +157,6 @@ export default function Form({
 
     setApiKey(apiKey);
     console.log(apiKey);
-  };
-
-  let query_sScrt_Token_Balance = async () => {
-    createViewingKey();
-
-    const balanceQuery = {
-      balance: {
-        key: apiKey,
-        address: myAddress,
-      },
-    };
-
-    let balance = await secretJs.query.compute.queryContract({
-      contract_address: sScrtContractAddress,
-      query: balanceQuery,
-    });
-
-    console.log("My token balance: ", balance);
   };
 
   return (
@@ -210,11 +233,14 @@ export default function Form({
                     </div>
                     <input
                       type="text"
-                      name="convert-SCRT"
-                      id="convert-SCRT"
+                      name="convertSCRT"
+                      id="convertSCRT"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
-                    <button className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2">
+                    <button
+                      onClick={handleChange}
+                      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2"
+                    >
                       Convert SCRT
                     </button>
                   </div>
@@ -224,8 +250,8 @@ export default function Form({
                     </div>
                     <input
                       type="text"
-                      name="convert-sSCRT"
-                      id="convert-sSCRT"
+                      name="convertSCRT"
+                      id="convertSCRT"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                     <button className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2">
