@@ -15,9 +15,47 @@ export default function Form({
   scrtBalance,
   setScrtScrtBalance,
   scrtScrtBalance,
+  apiKey,
+  setApiKey,
+  tokenAmount,
+  setTokenAmount,
 }) {
   const sScrtContractAddress = "secret18vd8fpwxzck93qlwghaj6arh4p7c5n8978vsyg";
   const testAddress = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
+
+  async function connectWallet() {
+    const chainId = "pulsar-2";
+    const LCD_URL = "https://api.pulsar.scrttestnet.com";
+
+    await window.keplr.enable(chainId);
+    const keplrOfflineSigner = window.keplr.getOfflineSignerOnlyAmino(chainId);
+    const [{ address }] = await keplrOfflineSigner.getAccounts();
+
+    setSecretJs(
+      await new SecretNetworkClient({
+        url: LCD_URL,
+        chainId: chainId,
+        wallet: keplrOfflineSigner,
+        walletAddress: address,
+      })
+    );
+    setMyAddress(address);
+    console.log("my wallet address: ", address);
+  }
+
+  let handleChange = (e) => {
+    setTokenAmount(e.target.value);
+  };
+
+  let getBalance = async () => {
+    const {
+      balance: { amount },
+    } = await secretJs.query.bank.balance({
+      address: myAddress,
+      denom: "uscrt",
+    });
+    setScrtBalance(`You have ${Number(amount) / 1e6} SCRT!`);
+  };
 
   let depositScrt = async () => {
     let handleMsg = {
@@ -31,6 +69,24 @@ export default function Form({
         contract_address: sScrtContractAddress,
         msg: handleMsg,
         sent_funds: [{ denom: "uscrt", amount: "1" }],
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+  };
+
+  let redeem = async () => {
+    let handleMsg = {
+      redeem: { amount: { tokenAmount } },
+    };
+    console.log("Redeeming tokens");
+
+    const tx = await secretJs.tx.compute.executeContract(
+      {
+        sender: myAddress,
+        contract_address: sScrtContractAddress,
+        msg: handleMsg,
       },
       {
         gasLimit: 100_000,
@@ -63,6 +119,8 @@ export default function Form({
   };
 
   let query_sScrt_Token_Balance = async () => {
+    createViewingKey();
+
     const balanceQuery = {
       balance: {
         key: apiKey,
@@ -76,36 +134,6 @@ export default function Form({
     });
 
     console.log("My token balance: ", balance);
-  };
-  async function connectWallet() {
-    const chainId = "pulsar-2";
-    const LCD_URL = "https://api.pulsar.scrttestnet.com";
-    // const apiKey1 = "api_key_E5u6/bAGLhYeqZzDSBHr3qyRqkq43VPvloConQZXxE8=";
-
-    await window.keplr.enable(chainId);
-    const keplrOfflineSigner = window.keplr.getOfflineSignerOnlyAmino(chainId);
-    const [{ address }] = await keplrOfflineSigner.getAccounts();
-
-    setSecretJs(
-      await new SecretNetworkClient({
-        url: LCD_URL,
-        chainId: chainId,
-        wallet: keplrOfflineSigner,
-        walletAddress: address,
-      })
-    );
-    setMyAddress(address);
-    console.log("my wallet address: ", address);
-  }
-
-  let getBalance = async () => {
-    const {
-      balance: { amount },
-    } = await secretJs.query.bank.balance({
-      address: myAddress,
-      denom: "uscrt",
-    });
-    setScrtBalance(`You have ${Number(amount) / 1e6} SCRT!`);
   };
 
   return (
@@ -124,6 +152,9 @@ export default function Form({
               </h3>
               <p className="mt-1 text-sm text-gray-600 ml-2">
                 Exchange native SCRT tokens for sSCRT.
+              </p>
+              <p className="mt-1 text-sm text-gray-600 ml-2">
+                Wallet Address: {myAddress}
               </p>
             </div>
           </div>
@@ -157,7 +188,10 @@ export default function Form({
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
-                    <button className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <button
+                      onClick={query_sScrt_Token_Balance}
+                      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
                       sSCRT Balance
                     </button>
                     <div
@@ -171,112 +205,34 @@ export default function Form({
                   </div>
 
                   <div className="col-span-6 sm:col-span-4">
-                    <label
-                      htmlFor="email-address"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Email address
-                    </label>
+                    <div className="block text-sm font-medium text-gray-700">
+                      Convert SCRT to sSCRT
+                    </div>
                     <input
                       type="text"
-                      name="email-address"
-                      id="email-address"
-                      autoComplete="email"
+                      name="convert-SCRT"
+                      id="convert-SCRT"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
+                    <button className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2">
+                      Convert SCRT
+                    </button>
                   </div>
-
-                  <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="country"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Country
-                    </label>
-                    <select
-                      id="country"
-                      name="country"
-                      autoComplete="country-name"
-                      className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                    >
-                      <option>United States</option>
-                      <option>Canada</option>
-                      <option>Mexico</option>
-                    </select>
-                  </div>
-
-                  <div className="col-span-6">
-                    <label
-                      htmlFor="street-address"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Street address
-                    </label>
+                  <div className="col-span-6 sm:col-span-4">
+                    <div className="block text-sm font-medium text-gray-700">
+                      Convert sSCRT to SCRT
+                    </div>
                     <input
                       type="text"
-                      name="street-address"
-                      id="street-address"
-                      autoComplete="street-address"
+                      name="convert-sSCRT"
+                      id="convert-sSCRT"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
-                  </div>
-
-                  <div className="col-span-6 sm:col-span-6 lg:col-span-2">
-                    <label
-                      htmlFor="city"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      id="city"
-                      autoComplete="address-level2"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
-                  </div>
-
-                  <div className="col-span-6 sm:col-span-3 lg:col-span-2">
-                    <label
-                      htmlFor="region"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      State / Province
-                    </label>
-                    <input
-                      type="text"
-                      name="region"
-                      id="region"
-                      autoComplete="address-level1"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
-                  </div>
-
-                  <div className="col-span-6 sm:col-span-3 lg:col-span-2">
-                    <label
-                      htmlFor="postal-code"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      ZIP / Postal code
-                    </label>
-                    <input
-                      type="text"
-                      name="postal-code"
-                      id="postal-code"
-                      autoComplete="postal-code"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
+                    <button className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2">
+                      Convert sSCRT
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-                <button
-                  type="submit"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Save
-                </button>
               </div>
             </div>
           </div>

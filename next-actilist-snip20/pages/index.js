@@ -2,11 +2,12 @@ import Swap from "./components/Swap";
 import { useState } from "react";
 
 export default function Home() {
-  const [myAddress, setMyAddress] = useState("");
+  const [myAddress, setMyAddress] = useState("No wallet currently connected.");
   const [scrtBalance, setScrtBalance] = useState("SCRT Balance: ");
   const [scrtScrtBalance, setScrtScrtBalance] = useState("sSCRT Balance: ");
   const [apiKey, setApiKey] = useState("");
   const [secretJs, setSecretJs] = useState(null);
+  const [tokenAmount, setTokenAmount] = useState("");
 
   return (
     <div>
@@ -19,13 +20,11 @@ export default function Home() {
         scrtBalance={scrtBalance}
         scrtScrtBalance={scrtScrtBalance}
         setScrtScrtBalance={setScrtScrtBalance}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+        tokenAmount={tokenAmount}
+        setTokenAmount={setTokenAmount}
       />
-      {/* <button onClick={connectWallet}>Connect Wallet</button>
-      <button onClick={getBalance}>Get Balance</button>
-      <button onClick={createViewingKey}>Create Viewing Key</button>
-      <button onClick={depositScrt}>Deposit Secret</button>
-      <button onClick={query_sScrt_Token_Balance}>Query Balance</button>
-      */}
     </div>
   );
 }
